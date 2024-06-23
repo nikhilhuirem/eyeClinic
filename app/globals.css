@@ -67,10 +67,11 @@
   }
 
   @layer base {
-    * {
-      @apply border-border;
+      * {
+        border: var(--border);
+      }
+      body {
+        background-color: var(--background);
+        color: var(--foreground);
+      }
     }
-    body {
-      @apply bg-background text-foreground;
-    }
-  }
