@@ -60,6 +60,7 @@ const PatientForm = () => {
             <option value="new">New</option>
             <option value="review">Review</option>
             <option value="charity">Charity</option>
+            <option value="charity">Old Patient</option>
           </select>
         </div>
         <div className="mb-4">

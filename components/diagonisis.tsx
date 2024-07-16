@@ -22,13 +22,19 @@ const DiagnosisForm = () => {
   const handleMedicationChange = (e, index) => {
     const { name, value } = e.target;
     const updatedMedications = [...medications];
-    updatedMedications[index][name] = value;
+    updatedMedications[index ][name] = value;
     setMedications(updatedMedications);
   };
   return (
     <div className="max-w-10xl mx-auto p-4 bg-white shadow-md rounded-md">
       <h2 className="text-2xl font-bold mb-4">Diagnosis Form</h2>
       <form>
+      <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700">Comments</label>
+          <textarea
+            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          ></textarea>
+        </div>
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-2">Diagnosis</h3>
           <div className="grid grid-cols-3 gap-4">
@@ -102,6 +108,10 @@ const DiagnosisForm = () => {
               </tr>
             </tbody>
           </table>
+          <div className='border px-4 py-2'>
+            <h3>Calculate vision</h3>
+            <input type="text" className="w-full px-2 py-1 border rounded" />
+          </div>
         </div>
 
         <div className="mb-6">
