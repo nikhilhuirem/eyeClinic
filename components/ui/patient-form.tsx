@@ -1,12 +1,25 @@
+// components/PatientForm.tsx
 "use client";
-import React, { useState, useEffect, FormEvent } from "react";
+import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import axios from "axios";
 
-const PatientForm = () => {
+interface FormData {
+  name: string;
+  age: number;
+  sex: string;
+  address: string;
+  mobile: string;
+  patient_type: string;
+  consultancy_fee: string;
+  payment_status: string;
+}
+
+const PatientForm: React.FC = () => {
   const [patientType, setPatientType] = useState<string>("new");
   const [consultancyFee, setConsultancyFee] = useState<number>(500);
   const [patientId, setPatientId] = useState<string>("");
-  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<string>("not_paid");
 
   useEffect(() => {
     const date = new Date();
@@ -22,14 +35,12 @@ const PatientForm = () => {
     const interval = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-
     return () => clearInterval(interval);
   }, []);
 
-  const handlePatientTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handlePatientTypeChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const type = e.target.value;
     setPatientType(type);
-
     switch (type) {
       case "new":
         setConsultancyFee(500);
@@ -48,37 +59,53 @@ const PatientForm = () => {
     }
   };
 
+  const handlePaymentStatusChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setPaymentStatus(e.target.value);
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data: any = Object.fromEntries(formData.entries());
+    if (paymentStatus === "not_paid") {
+      alert("Payment status must be set to 'Paid' before submitting.");
+      return;
+    }
 
-    if (!/^\d{10}$/.test(data.mobile)) {
+    const formData = new FormData(e.target as HTMLFormElement);
+    const data: Partial<FormData> = Object.fromEntries(
+      formData.entries()
+    ) as Partial<FormData>;
+
+    if (!/^\d{10}$/.test(data.mobile!)) {
       alert(
         "Invalid phone number. Please enter a valid 10-digit phone number."
       );
       return;
     }
 
-    // Convert age to an integer
-    data.age = parseInt(data.age, 10);
-
-    // Format date and time for MySQL compatibility
-    const date = new Date();
-    data.date = date.toISOString().split("T")[0]; // YYYY-MM-DD format
-    data.time = date.toTimeString().split(" ")[0]; // HH:MM:SS format
-
+    data.age = parseInt(data.age as unknown as string, 10);
     try {
-      await axios.post(`/api/patient/${patientId}`, data);
+      await axios.post(`/api/patient/${patientId}`, {
+        name: data.name,
+        age: data.age,
+        sex: data.sex,
+        address: data.address,
+        mobile: data.mobile,
+        date: currentTime!.toISOString().slice(0, 10),
+        time: currentTime!.toISOString().slice(11, 19),
+      });
       alert("Patient saved successfully!");
       window.location.reload();
-    } catch (error) {
-      console.error("Error saving patient data:", error);
-      alert("Failed to save patient data.");
+    } catch (error: any) {
+      if (error.response && error.response.status === 409) {
+        alert("Patient ID already exists.");
+      } else {
+        console.error("Error saving patient data:", error);
+        alert("Failed to save patient data.");
+      }
     }
   };
 
-  const formatTime = (date: Date) => {
+  const formatTime = (date: Date): string => {
     return date.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "numeric",
@@ -87,7 +114,7 @@ const PatientForm = () => {
     });
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date): string => {
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "2-digit",
@@ -99,7 +126,7 @@ const PatientForm = () => {
     <div className="max-w-md mx-auto p-4 bg-white shadow-md rounded-md relative">
       <h2 className="text-2xl font-bold mb-4">Patient Form</h2>
       <div className="absolute top-4 right-4">
-        {formatDate(currentTime)} {formatTime(currentTime)}
+        {currentTime && `${formatDate(currentTime)} ${formatTime(currentTime)}`}
       </div>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
@@ -108,6 +135,7 @@ const PatientForm = () => {
           </label>
           <input
             type="text"
+            name="patient_id"
             value={patientId}
             readOnly
             className="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm sm:text-sm"
@@ -120,7 +148,6 @@ const PatientForm = () => {
           <input
             type="text"
             name="name"
-            required
             className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
@@ -129,7 +156,6 @@ const PatientForm = () => {
           <input
             type="number"
             name="age"
-            required
             className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
@@ -138,7 +164,6 @@ const PatientForm = () => {
           <input
             type="text"
             name="sex"
-            required
             className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
@@ -149,7 +174,6 @@ const PatientForm = () => {
           <input
             type="text"
             name="address"
-            required
             className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
@@ -160,7 +184,6 @@ const PatientForm = () => {
           <input
             type="text"
             name="mobile"
-            required
             className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
@@ -186,6 +209,7 @@ const PatientForm = () => {
           </label>
           <input
             type="text"
+            name="consultancy_fee"
             value={`Rs ${consultancyFee}`}
             readOnly
             className="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm sm:text-sm"
@@ -197,7 +221,8 @@ const PatientForm = () => {
           </label>
           <select
             name="payment_status"
-            defaultValue="not_paid"
+            value={paymentStatus}
+            onChange={handlePaymentStatusChange}
             className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           >
             <option value="paid">Paid</option>
@@ -206,7 +231,15 @@ const PatientForm = () => {
         </div>
         <button
           type="submit"
-          className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
+          className={`w-full py-2 px-4 ${
+            paymentStatus === "not_paid"
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600"
+          } text-white font-semibold rounded-md shadow-md ${
+            paymentStatus !== "not_paid" &&
+            "hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
+          }`}
+          disabled={paymentStatus === "not_paid"}
         >
           Submit
         </button>
