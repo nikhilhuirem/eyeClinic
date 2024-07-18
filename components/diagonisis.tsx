@@ -1,16 +1,16 @@
 // components/DiagnosisForm.js
-"use client"
-import React, { useState } from 'react';
+"use client";
+import React, { useState } from "react";
 
 const DiagnosisForm = () => {
   const initialMedicationRow = {
-    eye: '',
-    form: '',
-    medicine: '',
-    dose: '',
-    frequency: '',
-    duration: '',
-    remarks: ''
+    eye: "",
+    form: "",
+    medicine: "",
+    dose: "",
+    frequency: "",
+    duration: "",
+    remarks: "",
   };
 
   const [medications, setMedications] = useState([initialMedicationRow]);
@@ -19,41 +19,52 @@ const DiagnosisForm = () => {
     setMedications([...medications, initialMedicationRow]);
   };
 
-  const handleMedicationChange = (e, index) => {
+  const handleMedicationChange = (
+    e:
+      | React.ChangeEvent<HTMLSelectElement>
+      | React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
     const { name, value } = e.target;
     const updatedMedications = [...medications];
-    updatedMedications[index ][name] = value;
+    updatedMedications[index][name] = value;
     setMedications(updatedMedications);
   };
   return (
     <div className="max-w-10xl mx-auto p-4 bg-white shadow-md rounded-md">
       <h2 className="text-2xl font-bold mb-4">Diagnosis Form</h2>
       <form>
-      <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700">Comments</label>
-          <textarea
-            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          ></textarea>
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700">
+            Comments
+          </label>
+          <textarea className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
         </div>
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-2">Diagnosis</h3>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">OU</label>
+              <label className="block text-sm font-medium text-gray-700">
+                OU
+              </label>
               <input
                 type="text"
                 className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">OD</label>
+              <label className="block text-sm font-medium text-gray-700">
+                OD
+              </label>
               <input
                 type="text"
                 className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">OS</label>
+              <label className="block text-sm font-medium text-gray-700">
+                OS
+              </label>
               <input
                 type="text"
                 className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -68,8 +79,12 @@ const DiagnosisForm = () => {
             <thead>
               <tr>
                 <th className="border px-4 py-2 text-left"></th>
-                <th colSpan="4" className="border px-4 py-2 text-center">Right Eye</th>
-                <th colSpan="4" className="border px-4 py-2 text-center">Left Eye</th>
+                <th colSpan="4" className="border px-4 py-2 text-center">
+                  Right Eye
+                </th>
+                <th colSpan="4" className="border px-4 py-2 text-center">
+                  Left Eye
+                </th>
               </tr>
               <tr>
                 <th className="border px-4 py-2 text-left"></th>
@@ -86,29 +101,109 @@ const DiagnosisForm = () => {
             <tbody>
               <tr>
                 <td className="border px-4 py-2">DV</td>
-                <td className="border px-4 py-2 bg-white border border-gray-300"><input type="text" className="w-full px-2 py-1 border rounded " /></td>
-                <td className="border px-4 py-2"><input type="text" className="w-full px-2 py-1 border rounded" /></td>
-                <td className="border px-4 py-2"><input type="text" className="w-full px-2 py-1 border rounded" /></td>
-                <td className="border px-4 py-2"><input type="text" className="w-full px-2 py-1 border rounded" /></td>
-                <td className="border px-4 py-2"><input type="text" className="w-full px-2 py-1 border rounded" /></td>
-                <td className="border px-4 py-2"><input type="text" className="w-full px-2 py-1 border rounded" /></td>
-                <td className="border px-4 py-2"><input type="text" className="w-full px-2 py-1 border rounded" /></td>
-                <td className="border px-4 py-2"><input type="text" className="w-full px-2 py-1 border rounded" /></td>
+                <td className="border px-4 py-2 bg-white border border-gray-300">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border rounded "
+                  />
+                </td>
+                <td className="border px-4 py-2">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border rounded"
+                  />
+                </td>
+                <td className="border px-4 py-2">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border rounded"
+                  />
+                </td>
+                <td className="border px-4 py-2">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border rounded"
+                  />
+                </td>
+                <td className="border px-4 py-2">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border rounded"
+                  />
+                </td>
+                <td className="border px-4 py-2">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border rounded"
+                  />
+                </td>
+                <td className="border px-4 py-2">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border rounded"
+                  />
+                </td>
+                <td className="border px-4 py-2">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border rounded"
+                  />
+                </td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">NV</td>
-                <td className="border px-4 py-2"><input type="text" className="w-full px-2 py-1 border rounded" /></td>
-                <td className="border px-4 py-2"><input type="text" className="w-full px-2 py-1 border rounded" /></td>
-                <td className="border px-4 py-2"><input type="text" className="w-full px-2 py-1 border rounded" /></td>
-                <td className="border px-4 py-2"><input type="text" className="w-full px-2 py-1 border rounded" /></td>
-                <td className="border px-4 py-2"><input type="text" className="w-full px-2 py-1 border rounded" /></td>
-                <td className="border px-4 py-2"><input type="text" className="w-full px-2 py-1 border rounded" /></td>
-                <td className="border px-4 py-2"><input type="text" className="w-full px-2 py-1 border rounded" /></td>
-                <td className="border px-4 py-2"><input type="text" className="w-full px-2 py-1 border rounded" /></td>
+                <td className="border px-4 py-2">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border rounded"
+                  />
+                </td>
+                <td className="border px-4 py-2">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border rounded"
+                  />
+                </td>
+                <td className="border px-4 py-2">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border rounded"
+                  />
+                </td>
+                <td className="border px-4 py-2">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border rounded"
+                  />
+                </td>
+                <td className="border px-4 py-2">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border rounded"
+                  />
+                </td>
+                <td className="border px-4 py-2">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border rounded"
+                  />
+                </td>
+                <td className="border px-4 py-2">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border rounded"
+                  />
+                </td>
+                <td className="border px-4 py-2">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border rounded"
+                  />
+                </td>
               </tr>
             </tbody>
           </table>
-          <div className='border px-4 py-2'>
+          <div className="border px-4 py-2">
             <h3>Calculate vision</h3>
             <input type="text" className="w-full px-2 py-1 border rounded" />
           </div>
@@ -146,13 +241,17 @@ const DiagnosisForm = () => {
                 <td className="border px-4 py-2">Lens Type</td>
                 <td className="border px-4 py-2">
                   <select className="w-full px-2 py-1 border rounded">
-                    <option value="Digital Progressive">Digital Progressive</option>
+                    <option value="Digital Progressive">
+                      Digital Progressive
+                    </option>
                     <option value="Bifocal">Bifocal</option>
                   </select>
                 </td>
                 <td className="border px-4 py-2">
                   <select className="w-full px-2 py-1 border rounded">
-                    <option value="Digital Progressive">Digital Progressive</option>
+                    <option value="Digital Progressive">
+                      Digital Progressive
+                    </option>
                     <option value="Bifocal">Bifocal</option>
                   </select>
                 </td>
@@ -162,17 +261,17 @@ const DiagnosisForm = () => {
         </div>
 
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700">Remarks</label>
-          <textarea
-            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          ></textarea>
+          <label className="block text-sm font-medium text-gray-700">
+            Remarks
+          </label>
+          <textarea className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
         </div>
 
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700">Clinical Comments</label>
-          <textarea
-            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          ></textarea>
+          <label className="block text-sm font-medium text-gray-700">
+            Clinical Comments
+          </label>
+          <textarea className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
         </div>
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-2">Medications</h3>
