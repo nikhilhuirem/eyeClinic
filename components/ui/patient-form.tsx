@@ -71,6 +71,7 @@ const PatientForm = () => {
     try {
       await axios.post(`/api/patient/${patientId}`, data);
       alert("Patient saved successfully!");
+      window.location.reload();
     } catch (error) {
       console.error("Error saving patient data:", error);
       alert("Failed to save patient data.");
