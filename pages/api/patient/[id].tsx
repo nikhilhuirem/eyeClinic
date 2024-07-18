@@ -20,16 +20,18 @@ export default async function handler(
         res.status(200).json(rows[0]);
       }
     } else if (req.method === "POST") {
-      const { age, sex, address, mobile, date, time } = req.body;
+      console.log(req.body);
+      const { patient_id, name, age, sex, address, mobile, date, time } =
+        req.body;
 
-      if (!age || !sex || !address || !mobile || !date || !time) {
+      if (!age || !sex || !address || !mobile || !date || !time || !name) {
         res.status(400).json({ message: "Missing required fields" });
         return;
       }
 
       await connection.execute(
-        "INSERT INTO patient (patient_id, age, sex, address, mobile, date, time) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        [id, age, sex, address, mobile, date, time]
+        "INSERT INTO patient (patient_id,name, age, sex, address, mobile, date, time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [id, name, age, sex, address, mobile, date, time]
       );
       res.status(201).json({ message: "Patient added" });
     } else {

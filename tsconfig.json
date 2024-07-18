@@ -13,7 +13,7 @@
     "jsx": "preserve",
     "incremental": true,
     "target": "esnext",
-    "forceConsistentCasingInFileNames": true,
+  
     "plugins": [
       {
         "name": "next"
