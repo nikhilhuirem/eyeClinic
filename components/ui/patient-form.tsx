@@ -83,6 +83,9 @@ const PatientForm: React.FC = () => {
     }
 
     data.age = parseInt(data.age as unknown as string, 10);
+    const currentDate = currentTime!.toISOString().slice(0, 10);
+    const currentTimeString = currentTime!.toISOString().slice(11, 19);
+
     try {
       await axios.post(`/api/patient/${patientId}`, {
         name: data.name,
@@ -90,14 +93,20 @@ const PatientForm: React.FC = () => {
         sex: data.sex,
         address: data.address,
         mobile: data.mobile,
-        date: currentTime!.toISOString().slice(0, 10),
-        time: currentTime!.toISOString().slice(11, 19),
+        date: currentDate,
+        time: currentTimeString,
+        patient_type: data.patient_type,
+        consultancy_fee: data.consultancy_fee,
+        payment_status: data.payment_status,
       });
       alert("Patient saved successfully!");
       window.location.reload();
     } catch (error: any) {
       if (error.response && error.response.status === 409) {
         alert("Patient ID already exists.");
+      } else if (error.response && error.response.status === 400) {
+        console.error("Error saving patient data:", error);
+        alert("Missing required fields.");
       } else {
         console.error("Error saving patient data:", error);
         alert("Failed to save patient data.");

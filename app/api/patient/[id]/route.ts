@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import connection from "@/lib/db";
-import { RowDataPacket } from "mysql2";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 // Helper function to extract ID from the URL
 const getIdFromRequest = (req: NextRequest) => {
@@ -16,16 +17,15 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const [rows]: [RowDataPacket[], any] = await connection.execute(
-      "SELECT * FROM patient WHERE patient_id = ?",
-      [id]
-    );
+    const patient = await prisma.patient.findUnique({
+      where: { patient_id: id },
+    });
 
-    if (rows.length === 0) {
+    if (!patient) {
       return NextResponse.json({ message: "Patient not found" }, { status: 404 });
     }
 
-    return NextResponse.json(rows[0], { status: 200 });
+    return NextResponse.json(patient, { status: 200 });
   } catch (error) {
     console.error("Error executing query", error);
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
@@ -40,16 +40,27 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { patient_id, name, age, sex, address, mobile, date, time } = body;
+    const { name, age, sex, address, mobile, date, time, patient_type, consultancy_fee, payment_status } = body;
 
-    if (!age || !sex || !address || !mobile || !date || !time || !name) {
+    if (!age || !sex || !address || !mobile || !date || !time || !name || !patient_type || !consultancy_fee || !payment_status) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
     }
 
-    await connection.execute(
-      "INSERT INTO patient (patient_id, name, age, sex, address, mobile, date, time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [id, name, age, sex, address, mobile, date, time]
-    );
+    await prisma.patient.create({
+      data: {
+        patient_id: id,
+        name: name,
+        age: age,
+        sex: sex,
+        address: address,
+        mobile: mobile,
+        date: new Date(date), // Ensure date is stored correctly
+        time: new Date(`1970-01-01T${time}Z`), // Convert time to Date object
+        patient_type: patient_type,
+        consultancy_fee: consultancy_fee,
+        payment_status: payment_status,
+      },
+    });
 
     return NextResponse.json({ message: "Patient added" }, { status: 201 });
   } catch (error) {

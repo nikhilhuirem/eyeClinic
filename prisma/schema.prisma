@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model diagnosis {
+  patient_id       String    @id @db.VarChar(50)
+  clinical_comment String?   @db.Text
+  action_plan      String?   @db.Text
+  review_date      DateTime? @db.Date
+  comment          String?   @db.Text
+  patient          patient   @relation(fields: [patient_id], references: [patient_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_patient")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model diagnosis_list {
+  diagnosis_name String? @db.Text
+
+  @@ignore
+}
+
+model eye_perscription {
+  patient_id  String  @db.VarChar(50)
+  eye         String  @db.Text
+  vision_type String  @db.Text
+  sphere      Float?  @db.Float
+  cylinder    Float?  @db.Float
+  axis        Float?  @db.Float
+  va          String? @db.Text
+  patient     patient @relation(fields: [patient_id], references: [patient_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_patient_eye_prescription")
+
+  @@id([patient_id, eye(length: 5), vision_type(length: 2)])
+}
+
+model glass_perscription {
+  patient_id String  @db.VarChar(50)
+  eye        String  @db.Text
+  glass_type String? @db.Text
+  lens_type  String? @db.Text
+  patient    patient @relation(fields: [patient_id], references: [patient_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_patient_glass_perscription")
+
+  @@id([patient_id, eye(length: 5)])
+}
+
+model medication {
+  patient_id String  @db.VarChar(50)
+  sl_no      Int
+  eye        String? @db.Text
+  form       String? @db.Text
+  medicine   String? @db.Text
+  dose       String? @db.Text
+  frequency  String? @db.Text
+  duration   String? @db.Text
+  remark     String? @db.Text
+  patient    patient @relation(fields: [patient_id], references: [patient_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_patient_medication")
+
+  @@id([patient_id, sl_no])
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model medicine_available {
+  medicine_name String? @db.Text
+
+  @@ignore
+}
+
+model patient {
+  patient_id         String               @id @db.VarChar(50)
+  name               String?              @db.VarChar(255)
+  age                Int?
+  sex                String?              @db.Text
+  address            String?              @db.Text
+  mobile             String?              @db.Text
+  date               DateTime?            @db.Date
+  time               DateTime?            @db.Time(0)
+  patient_type       String?              @db.Text
+  consultancy_fee    String?              @db.Text
+  payment_status     String?              @db.Text
+  diagnosis          diagnosis?
+  eye_perscription   eye_perscription[]
+  glass_perscription glass_perscription[]
+  medication         medication[]
+}
