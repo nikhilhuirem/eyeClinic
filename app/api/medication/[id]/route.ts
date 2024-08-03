@@ -24,11 +24,11 @@ export async function GET(req: NextRequest) {
     });
     
     if (!medication || medication.length === 0) {
-      console.log("No glass prescription found for patient ID:", id);
-      return NextResponse.json({ message: "Glass Prescription not found" }, { status: 404 });
+      console.log("No medication found for patient ID:", id);
+      return NextResponse.json({ message: "Medication not found" }, { status: 404 });
     }
 
-    console.log("Glass prescription found for patient ID:", id, medication);
+    console.log("Medication found for patient ID:", id, medication);
     return NextResponse.json(medication, { status: 200 });
   } catch (error) {
     console.error("Error executing query", error);
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Invalid data format" }, { status: 400 });
     }
 
-    const requiredFields = ["sl_no", "eye", "form", "medicine","dose","frequency","duration","remark"];
+    const requiredFields = ["sl_no", "eye", "form", "medicine", "dose", "frequency", "duration", "remark"];
 
     for (const entry of body) {
       for (const field of requiredFields) {
@@ -59,23 +59,52 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const entries = body.map((entry: any) => ({
-      patient_id: id,
-      sl_no: entry.sl_no,
-      eye: entry.eye,
-      form: entry.form,
-      medicine: entry.medicine,
-      dose: entry.dose,
-      frequency: entry.frequency,
-      duration: entry.duration,
-      remark: entry.remark,
-    }));
+    for (const entry of body) {
+      const existingMedication = await prisma.medication.findUnique({
+        where: {
+          patient_id_sl_no: {
+            patient_id: id,
+            sl_no: entry.sl_no,
+          },
+        },
+      });
 
-    await prisma.medication.createMany({
-      data: entries,
-    });
+      if (existingMedication) {
+        await prisma.medication.update({
+          where: {
+            patient_id_sl_no: {
+              patient_id: id,
+              sl_no: entry.sl_no,
+            },
+          },
+          data: {
+            eye: entry.eye,
+            form: entry.form,
+            medicine: entry.medicine,
+            dose: entry.dose,
+            frequency: entry.frequency,
+            duration: entry.duration,
+            remark: entry.remark,
+          },
+        });
+      } else {
+        await prisma.medication.create({
+          data: {
+            patient_id: id,
+            sl_no: entry.sl_no,
+            eye: entry.eye,
+            form: entry.form,
+            medicine: entry.medicine,
+            dose: entry.dose,
+            frequency: entry.frequency,
+            duration: entry.duration,
+            remark: entry.remark,
+          },
+        });
+      }
+    }
 
-    return NextResponse.json({ message: "Medications added" }, { status: 201 });
+    return NextResponse.json({ message: "Medications processed" }, { status: 201 });
   } catch (error) {
     console.error("Error executing query", error);
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
