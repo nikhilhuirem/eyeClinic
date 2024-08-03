@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
             lens_type: entry.lens_type,
           },
         });
+        return NextResponse.json({ message: "Glass prescriptions updated" }, { status: 200 });
       } else {
         await prisma.glass_perscription.create({
           data: {
@@ -91,10 +92,10 @@ export async function POST(req: NextRequest) {
             lens_type: entry.lens_type,
           },
         });
+        return NextResponse.json({ message: "Glass prescriptions created" }, { status: 201 });
       }
     }
 
-    return NextResponse.json({ message: "Glass prescriptions processed" }, { status: 201 });
   } catch (error) {
     console.error("Error executing query", error);
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
