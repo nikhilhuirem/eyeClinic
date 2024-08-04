@@ -2,7 +2,8 @@
 import React, { useState } from "react";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 
-interface Medication {
+interface medication {
+  sl_no: number;
   eye: string;
   form: string;
   medicine: string;
@@ -12,42 +13,45 @@ interface Medication {
   remarks: string;
 }
 
-interface FormData {
-  comments: string;
-  diagnosisOU: string;
-  diagnosisOD: string;
-  diagnosisOS: string;
-  glassPrescription: {
-    rightEye: {
-      sph: number;
-      cyl: number;
-      axis: number;
-      va: number;
-    };
-    leftEye: {
-      sph: number;
-      cyl: number;
-      axis: number;
-      va: number;
-    };
-  };
-  glassType: {
-    rightEye: string;
-    leftEye: string;
-  };
-  lensType: {
-    rightEye: string;
-    leftEye: string;
-  };
-  remarks: string;
-  clinicalComments: string;
-  medications: Medication[];
+interface diagnosis {
+  clinical_comment: string;
+  action_plan: string;
+  review_date: string;
+  comment: string;
 }
 
+interface eyeDiagnosis {
+  sl_no: number;
+  eye: string;
+  diagnosis: string;
+}
+
+interface eye_perscription {
+  eye: string;
+  vision_type: string;
+  sphere: number;
+  cylinder: number;
+  axis: number;
+  va: string;
+}
+
+interface glass_perscription {
+  eye: string;
+  glass_type: string;
+  lens_type: string;
+}
+interface patient {
+  name: string;
+  age: number;
+  sex: string;
+  address: string;
+  mobile: string;
+}
 const DiagnosisForm = () => {
   const { register, handleSubmit, control, setValue } = useForm<FormData>();
 
-  const initialMedicationRow: Medication = {
+  const initialMedicationRow: medication = {
+    sl_no: 1,
     eye: "",
     form: "",
     medicine: "",
@@ -57,7 +61,7 @@ const DiagnosisForm = () => {
     remarks: "",
   };
 
-  const [medications, setMedications] = useState<Medication[]>([
+  const [medications, setMedications] = useState<medication[]>([
     initialMedicationRow,
   ]);
 

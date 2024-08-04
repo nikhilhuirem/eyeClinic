@@ -1,11 +1,10 @@
-import PatientForm from "@/components/ui/patient-form"
-import Head from 'next/head';
+import PatientForm from "@/components/patient-form";
+import Head from "next/head";
 
 export default function Reception() {
   return (
-    <div >
-      
+    <div>
       <PatientForm />
     </div>
-  )
+  );
 }
