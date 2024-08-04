@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   if (!id) {
     return NextResponse.json({ message: "Patient ID is required" }, { status: 400 });
   }
-
+  console.log(id);
   try {
     const patient = await prisma.patient.findUnique({
       where: { patient_id: id },
@@ -40,29 +40,58 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { name, age, sex, address, mobile, date, time, patient_type, consultancy_fee, payment_status } = body;
+    const requiredFieldsForCreation= ["name", "age", "sex", "address", "mobile", "date", "time", "patient_type", "consultancy_fee", "payment_status" ];
+    const requiredFieldsForUpdation= ["name", "age", "sex", "address", "mobile" ];
 
-    if (!age || !sex || !address || !mobile || !date || !time || !name || !patient_type || !consultancy_fee || !payment_status) {
-      return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
-    }
-
-    await prisma.patient.create({
-      data: {
-        patient_id: id,
-        name: name,
-        age: age,
-        sex: sex,
-        address: address,
-        mobile: mobile,
-        date: new Date(date), // Ensure date is stored correctly
-        time: new Date(`1970-01-01T${time}Z`), // Convert time to Date object
-        patient_type: patient_type,
-        consultancy_fee: consultancy_fee,
-        payment_status: payment_status,
-      },
+    
+    const existingPatient= await prisma.patient.findUnique({
+      where:{
+        patient_id:id
+      }
     });
+    if(existingPatient)
+    {
+      for (const field of requiredFieldsForUpdation) {
+        if (!body[field]) {
+          return NextResponse.json({ message: `Missing required field: ${field}` }, { status: 400 });
+        }
+      }
+      await prisma.patient.update({
+        where:{
+          patient_id:id,
+        },
+        data:{
+          age:body.age,
+          name:body.name,
+          sex:body.sex,
+          address:body.address,
+          mobile: body.mobile,
+        }
+      });
+      return NextResponse.json({message: "Patient details updated"},{status:200});
+      }else{
+        for (const field of requiredFieldsForCreation) {
+        if (!body[field]) {
+          return NextResponse.json({ message: `Missing required field: ${field}` }, { status: 400 });
+        }
+      }
+      await prisma.patient.create({
+        data: {
+          patient_id: id,
+          name: body.name,
+          age: body.age,
+          sex: body.sex,
+          address: body.address,
+          mobile: body.mobile,
+          date: new Date(body.date), // Ensure date is stored correctly
+          time: new Date(`1970-01-01T${body.time}Z`), // Convert time to Date object
+          patient_type: body.patient_type,
+          consultancy_fee: body.consultancy_fee,
+          payment_status: body.payment_status,
+        },
+      });
 
-    return NextResponse.json({ message: "Patient added" }, { status: 201 });
+      return NextResponse.json({ message: "Patient added" }, { status: 201 });}
   } catch (error) {
     console.error("Error executing query", error);
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
