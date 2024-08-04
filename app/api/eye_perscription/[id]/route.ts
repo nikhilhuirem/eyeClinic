@@ -9,28 +9,27 @@ const getIdFromRequest = (req: NextRequest) => {
   return id;
 };
 
-export async function GET(req:NextRequest) {
-     const id=getIdFromRequest(req);
-    if(!id){
-        return NextResponse.json({message:"Patient ID is required"},{status:400});
+export async function GET(req: NextRequest) {
+  const id = getIdFromRequest(req);
+  if (!id) {
+    return NextResponse.json({ message: "Patient ID is required" }, { status: 400 });
+  }
+  try {
+    const eye_perscription = await prisma.eye_perscription.findMany({
+      where: { patient_id: id },
+    });
+    if (!eye_perscription || eye_perscription.length === 0) {
+      return NextResponse.json({ message: "Eye Prescription not found" }, { status: 404 });
     }
-    try {
-        const eye_perscription = await prisma.eye_perscription.findMany({
-          where: { patient_id: id },
-        });
-        if (!eye_perscription||eye_perscription.length===0) {
-          return NextResponse.json({ message: "Eye Perscription not found" }, { status: 404 });
-        }
-        return NextResponse.json(eye_perscription, { status: 200 });
-      } catch (error) {
-        console.error("Error executing query", error);
-        return NextResponse.json({ message: "Internal server error" }, { status: 500 });
-      }
+    return NextResponse.json(eye_perscription, { status: 200 });
+  } catch (error) {
+    console.error("Error executing query", error);
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+  }
 }
 
-
 export async function POST(req: NextRequest) {
-   const id = getIdFromRequest(req);
+  const id = getIdFromRequest(req);
   if (!id) {
     return NextResponse.json({ message: "Patient ID is required" }, { status: 400 });
   }
@@ -52,21 +51,49 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const entries = body.map((entry: any) => ({
-      patient_id: id,
-      eye: entry.eye,
-      vision_type: entry.vision_type,
-      sphere: entry.sphere,
-      cylinder: entry.cylinder,
-      axis: entry.axis,
-      va: entry.va,
-    }));
+    for (const entry of body) {
+      const existingPrescription = await prisma.eye_perscription.findUnique({
+        where: {
+          patient_id_eye_vision_type: {
+            patient_id: id,
+            eye: entry.eye,
+            vision_type: entry.vision_type,
+          },
+        },
+      });
 
-    await prisma.eye_perscription.createMany({
-      data: entries,
-    });
+      if (existingPrescription) {
+        await prisma.eye_perscription.update({
+          where: {
+            patient_id_eye_vision_type: {
+              patient_id: id,
+              eye: entry.eye,
+              vision_type: entry.vision_type,
+            },
+          },
+          data: {
+            sphere: entry.sphere,
+            cylinder: entry.cylinder,
+            axis: entry.axis,
+            va: entry.va,
+          },
+        });
+      } else {
+        await prisma.eye_perscription.create({
+          data: {
+            patient_id: id,
+            eye: entry.eye,
+            vision_type: entry.vision_type,
+            sphere: entry.sphere,
+            cylinder: entry.cylinder,
+            axis: entry.axis,
+            va: entry.va,
+          },
+        });
+      }
+    }
 
-    return NextResponse.json({ message: "Eye perscriptions added" }, { status: 201 });
+    return NextResponse.json({ message: "Eye prescriptions processed" }, { status: 201 });
   } catch (error) {
     console.error("Error executing query", error);
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });

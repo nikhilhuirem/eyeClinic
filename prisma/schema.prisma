@@ -23,17 +23,27 @@ model diagnosis_list {
   @@ignore
 }
 
+model eye_diagnosis {
+  patient_id String  @db.VarChar(50)
+  sl_no      Int
+  eye        String  @db.VarChar(2)
+  diagnosis  String? @db.Text
+  patient    patient @relation(fields: [patient_id], references: [patient_id], onDelete: NoAction, onUpdate: NoAction, map: "eye_diagnosis_ibfk_1")
+
+  @@id([patient_id, sl_no, eye])
+}
+
 model eye_perscription {
   patient_id  String  @db.VarChar(50)
-  eye         String  @db.Text
-  vision_type String  @db.Text
+  eye         String  @db.VarChar(10)
+  vision_type String  @db.VarChar(2)
   sphere      Float?  @db.Float
   cylinder    Float?  @db.Float
   axis        Float?  @db.Float
   va          String? @db.Text
-  patient     patient @relation(fields: [patient_id], references: [patient_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_patient_eye_prescription")
+  patient     patient @relation(fields: [patient_id], references: [patient_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_patient_eye_prescription")
 
-  @@id([patient_id, eye(length: 5), vision_type(length: 2)])
+  @@id([patient_id, eye, vision_type])
 }
 
 model glass_perscription {
@@ -81,6 +91,7 @@ model patient {
   consultancy_fee    String?              @db.Text
   payment_status     String?              @db.Text
   diagnosis          diagnosis?
+  eye_diagnosis      eye_diagnosis[]
   eye_perscription   eye_perscription[]
   glass_perscription glass_perscription[]
   medication         medication[]

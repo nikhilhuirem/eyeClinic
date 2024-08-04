@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, Controller, SubmitHandler } from "react-hook-form";
 
 interface Medication {
   eye: string;
@@ -47,7 +47,7 @@ interface FormData {
 const DiagnosisForm = () => {
   const { register, handleSubmit, control, setValue } = useForm<FormData>();
 
-  const initialMedicationRow = {
+  const initialMedicationRow: Medication = {
     eye: "",
     form: "",
     medicine: "",
@@ -57,7 +57,9 @@ const DiagnosisForm = () => {
     remarks: "",
   };
 
-  const [medications, setMedications] = useState([initialMedicationRow]);
+  const [medications, setMedications] = useState<Medication[]>([
+    initialMedicationRow,
+  ]);
 
   const handleAddMedicationRow = () => {
     setMedications([...medications, initialMedicationRow]);
@@ -69,29 +71,29 @@ const DiagnosisForm = () => {
   ) => {
     const { name, value } = e.target;
     const updatedMedications = [...medications];
-    updatedMedications[index][name] = value;
+    updatedMedications[index] = { ...updatedMedications[index], [name]: value };
     setMedications(updatedMedications);
     setValue(`medications.${index}.${name}`, value as never);
   };
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     try {
-      const response = await fetch('/api/diagnosis', { 
-        method: 'POST',
+      const response = await fetch("/api/diagnosis", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
-  
+
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
-  
+
       const result = await response.json();
-      console.log('Success:', result);
+      console.log("Success:", result);
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     }
   };
 
@@ -291,7 +293,6 @@ const DiagnosisForm = () => {
             </tbody>
           </table>
         </div>
-
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-2">Glass Type</h3>
           <div className="grid grid-cols-2 gap-4">
@@ -299,33 +300,24 @@ const DiagnosisForm = () => {
               <label className="block text-sm font-medium text-gray-700">
                 Right Eye
               </label>
-              <select
+              <input
+                type="text"
                 {...register("glassType.rightEye")}
                 className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                <option value="singleVision">Single Vision</option>
-                <option value="bifocal">Bifocal</option>
-                <option value="progressive">Progressive</option>
-                <option value="contactLens">Contact Lens</option>
-              </select>
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Left Eye
               </label>
-              <select
+              <input
+                type="text"
                 {...register("glassType.leftEye")}
                 className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                <option value="singleVision">Single Vision</option>
-                <option value="bifocal">Bifocal</option>
-                <option value="progressive">Progressive</option>
-                <option value="contactLens">Contact Lens</option>
-              </select>
+              />
             </div>
           </div>
         </div>
-
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-2">Lens Type</h3>
           <div className="grid grid-cols-2 gap-4">
@@ -333,31 +325,24 @@ const DiagnosisForm = () => {
               <label className="block text-sm font-medium text-gray-700">
                 Right Eye
               </label>
-              <select
+              <input
+                type="text"
                 {...register("lensType.rightEye")}
                 className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                <option value="normal">Normal</option>
-                <option value="blueCut">Blue Cut</option>
-                <option value="photochromatic">Photochromatic</option>
-              </select>
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Left Eye
               </label>
-              <select
+              <input
+                type="text"
                 {...register("lensType.leftEye")}
                 className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                <option value="normal">Normal</option>
-                <option value="blueCut">Blue Cut</option>
-                <option value="photochromatic">Photochromatic</option>
-              </select>
+              />
             </div>
           </div>
         </div>
-
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700">
             Remarks
@@ -367,7 +352,6 @@ const DiagnosisForm = () => {
             className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           ></textarea>
         </div>
-
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700">
             Clinical Comments
@@ -377,90 +361,113 @@ const DiagnosisForm = () => {
             className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           ></textarea>
         </div>
-
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-2">Medications</h3>
           {medications.map((medication, index) => (
-            <div key={index} className="grid grid-cols-6 gap-4 mb-4">
-              <select
-                name="eye"
-                value={medication.eye}
-                onChange={(e) => handleMedicationChange(e, index)}
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                <option value="OD">OD</option>
-                <option value="OS">OS</option>
-                <option value="OU">OU</option>
-              </select>
-              <select
-                name="form"
-                value={medication.form}
-                onChange={(e) => handleMedicationChange(e, index)}
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                <option value="tablet">Tablet</option>
-                <option value="drops">Drops</option>
-                <option value="ointment">Ointment</option>
-              </select>
-              <input
-                name="medicine"
-                value={medication.medicine}
-                onChange={(e) => handleMedicationChange(e, index)}
-                type="text"
-                placeholder="Medicine"
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-              <input
-                name="dose"
-                value={medication.dose}
-                onChange={(e) => handleMedicationChange(e, index)}
-                type="text"
-                placeholder="Dose"
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-              <input
-                name="frequency"
-                value={medication.frequency}
-                onChange={(e) => handleMedicationChange(e, index)}
-                type="text"
-                placeholder="Frequency"
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-              <input
-                name="duration"
-                value={medication.duration}
-                onChange={(e) => handleMedicationChange(e, index)}
-                type="text"
-                placeholder="Duration"
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-              <input
-                name="remarks"
-                value={medication.remarks}
-                onChange={(e) => handleMedicationChange(e, index)}
-                type="text"
-                placeholder="Remarks"
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
+            <div key={index} className="grid grid-cols-7 gap-4 mb-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Eye
+                </label>
+                <select
+                  name="eye"
+                  value={medication.eye}
+                  onChange={(e) => handleMedicationChange(e, index)}
+                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option value=""></option>
+                  <option value="right">Right</option>
+                  <option value="left">Left</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Form
+                </label>
+                <input
+                  type="text"
+                  name="form"
+                  value={medication.form}
+                  onChange={(e) => handleMedicationChange(e, index)}
+                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Medicine
+                </label>
+                <input
+                  type="text"
+                  name="medicine"
+                  value={medication.medicine}
+                  onChange={(e) => handleMedicationChange(e, index)}
+                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Dose
+                </label>
+                <input
+                  type="text"
+                  name="dose"
+                  value={medication.dose}
+                  onChange={(e) => handleMedicationChange(e, index)}
+                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Frequency
+                </label>
+                <input
+                  type="text"
+                  name="frequency"
+                  value={medication.frequency}
+                  onChange={(e) => handleMedicationChange(e, index)}
+                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Duration
+                </label>
+                <input
+                  type="text"
+                  name="duration"
+                  value={medication.duration}
+                  onChange={(e) => handleMedicationChange(e, index)}
+                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Remarks
+                </label>
+                <input
+                  type="text"
+                  name="remarks"
+                  value={medication.remarks}
+                  onChange={(e) => handleMedicationChange(e, index)}
+                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
             </div>
           ))}
           <button
             type="button"
             onClick={handleAddMedicationRow}
-            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md shadow-sm"
+            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Add Medication
           </button>
         </div>
-
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded-md shadow-sm"
-          >
-            Submit
-          </button>
-        </div>
+        <button
+          type="submit"
+          className="px-4 py-2 bg-green-500 text-white rounded-md shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+        >
+          Submit
+        </button>
       </form>
     </div>
   );
