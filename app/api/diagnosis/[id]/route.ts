@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import GetIdFromRequest from "@/components/getIDFromRequest";
 
 const prisma = new PrismaClient();
 
-const getIdFromRequest = (req: NextRequest) => {
-  const url = new URL(req.url);
-  const id = url.pathname.split("/").pop();
-  return id;
-};
-
 export async function GET(req: NextRequest) {
-  const id = getIdFromRequest(req);
+  const id = GetIdFromRequest(req);
   if (!id) {
     return NextResponse.json({ message: "Patient ID is required" }, { status: 400 });
   }
@@ -29,16 +24,16 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const id = getIdFromRequest(req);
+  const id = GetIdFromRequest(req);
   if (!id) {
     return NextResponse.json({ message: "Patient ID is required" }, { status: 400 });
   }
 
   try {
     const body = await req.json();
-    const { comment, clinical_comment, action_plan, review_date } = body;
+    const {  complaint, clinical_comment, action_plan, review_date } = body;
 
-    if (!comment || !clinical_comment || !action_plan || !review_date) {
+    if (!complaint || !clinical_comment || !action_plan || !review_date) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
     }
 
@@ -50,7 +45,7 @@ export async function POST(req: NextRequest) {
       await prisma.diagnosis.update({
         where: { patient_id: id },
         data: {
-          comment: comment,
+          complaint: complaint,
           clinical_comment: clinical_comment,
           action_plan: action_plan,
           review_date: new Date(review_date),
@@ -61,7 +56,7 @@ export async function POST(req: NextRequest) {
       await prisma.diagnosis.create({
         data: {
           patient_id: id,
-          comment: comment,
+          complaint: complaint,
           clinical_comment: clinical_comment,
           action_plan: action_plan,
           review_date: new Date(review_date),

@@ -21,9 +21,7 @@ const Header: React.FC = () => {
             SAFE-SIGHT EYE CARE
           </h1>
           <p className="text-gray-700 text-sm">An excellent eye care centre</p>
-          <p className="text-gray-700 text-sm">
-            Kiyam Siphai Babu Bazar, Thoubal, Manipur-795138
-          </p>
+
           <p className="text-gray-700 text-sm">
             03848 291288 (Call) / 8257970103
           </p>

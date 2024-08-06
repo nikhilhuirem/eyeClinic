@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import GetIdFromRequest from "@/components/getIDFromRequest";
 
 const prisma = new PrismaClient();
 
-const getIdFromRequest = (req: NextRequest) => {
-  const url = new URL(req.url);
-  const id = url.pathname.split("/").pop();
-  return id;
-};
 
 export async function GET(req: NextRequest) {
-  const id = getIdFromRequest(req);
+  const id = GetIdFromRequest(req);
   
   if (!id) {
     console.log("No patient ID found in the URL.");
@@ -38,7 +34,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
 
-  const id = getIdFromRequest(req);
+  const id = GetIdFromRequest(req);
   if (!id) {
     return NextResponse.json({ message: "Patient ID is required" }, { status: 400 });
   }
@@ -113,42 +109,10 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function DELETE(req:NextRequest) {
-  const id = getIdFromRequest(req);
-  
-  if (!id) {
-    console.log("No patient ID found in the URL.");
-    return NextResponse.json({ message: "Patient ID is required" }, { status: 400 });
-  }
-
-  try{
-    const body = await req.json();
-    const requiredFields=["sl_no"];
-    for( const field of requiredFields){
-      if(!body[field]){
-        return NextResponse.json({ message:`Missing required field: ${field}`},{status:400});
-      }
-    }
-    const deletedRecord = await prisma.medication.delete({
-      where:{
-        patient_id_sl_no: {
-            patient_id: id,
-            sl_no: body.sl_no,
-          },
-      }
-    });
-    return NextResponse.json({message: "Medication deleted"},{status:200});
-  } catch(error){
-    console.error(error);
-    return NextResponse.json({ message: `Failed to delete record`},{status:500});
-  }
-
-}
-
 export function methods() {
-  return ["GET", "POST","DELETE"];
+  return ["GET", "POST"];
 }
 
 export async function OPTIONS() {
-  return NextResponse.json(null, { headers: { Allow: "GET, POST, DELETE" } });
+  return NextResponse.json(null, { headers: { Allow: "GET, POST" } });
 }
