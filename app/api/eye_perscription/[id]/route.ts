@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import GetIdFromRequest from "@/components/getIDFromRequest";
 
 const prisma = new PrismaClient();
 
-const getIdFromRequest = (req: NextRequest) => {
-  const url = new URL(req.url);
-  const id = url.pathname.split("/").pop();
-  return id;
-};
 
 export async function GET(req: NextRequest) {
-  const id = getIdFromRequest(req);
+  const id = GetIdFromRequest(req);
   if (!id) {
     return NextResponse.json({ message: "Patient ID is required" }, { status: 400 });
   }
@@ -29,7 +25,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const id = getIdFromRequest(req);
+  const id = GetIdFromRequest(req);
   if (!id) {
     return NextResponse.json({ message: "Patient ID is required" }, { status: 400 });
   }

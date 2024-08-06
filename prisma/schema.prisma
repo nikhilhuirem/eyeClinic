@@ -12,7 +12,7 @@ model diagnosis {
   clinical_comment String?   @db.Text
   action_plan      String?   @db.Text
   review_date      DateTime? @db.Date
-  comment          String?   @db.Text
+  complaint        String?   @db.Text
   patient          patient   @relation(fields: [patient_id], references: [patient_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_patient")
 }
 
