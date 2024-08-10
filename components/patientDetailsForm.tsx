@@ -31,7 +31,7 @@ const PatientDetailsForm: React.FC<PatientDetailsFormProps> = ({
   onSubmit,
 }) => {
   const [showAgeAlert, setShowAgeAlert] = useState(false);
-  const [showMobileAlert, setShowMobileAlert] = useState(false);
+  const [showMobileNumberAlert, setShowMobileNumberAlert] = useState(false);
   const [prevAge, setPrevAge] = useState<number | null>(null);
   const [prevMobile, setPrevMobile] = useState<string | null>(null);
 
@@ -75,7 +75,7 @@ const PatientDetailsForm: React.FC<PatientDetailsFormProps> = ({
     const mobilePattern = /^[1-9][0-9]{9}$/; // Adjust the pattern as needed for your validation
     if (mobile && !mobilePattern.test(mobile)) {
       trigger("mobile"); // Trigger validation to show the error message
-      setShowMobileAlert(true);
+      setShowMobileNumberAlert(true);
     }
   };
 
@@ -86,16 +86,16 @@ const PatientDetailsForm: React.FC<PatientDetailsFormProps> = ({
 
   const handleMobileAlertConfirm = () => {
     setValue("mobile", prevMobile as string); // Reset mobile to the previous value
-    setShowMobileAlert(false); // Close the alert dialog
+    setShowMobileNumberAlert(false); // Close the alert dialog
   };
 
   return (
     <>
-      <div className="bg-white p-6 rounded shadow-md w-full h-auto">
+      <div className="bg-white p-2 rounded shadow-md w-full h-auto">
         <h2 className="text-2xl mb-4">Patient Details:</h2>
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="grid grid-cols-1 gap-4 md:grid-cols-2"
+          className="grid grid-cols-1 gap-1.5 md:grid-cols-2"
         >
           <div className="mb-4">
             <label className="block text-gray-700">Patient ID</label>
@@ -159,7 +159,7 @@ const PatientDetailsForm: React.FC<PatientDetailsFormProps> = ({
               onBlur={handleMobileBlur}
               className="w-full px-4 py-2 border rounded"
             />
-            {errors.mobile && showMobileAlert && (
+            {errors.mobile && showMobileNumberAlert && (
               <p className="text-red-500">{errors.mobile.message}</p>
             )}
           </div>
@@ -180,7 +180,10 @@ const PatientDetailsForm: React.FC<PatientDetailsFormProps> = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <AlertDialog open={showMobileAlert} onOpenChange={setShowMobileAlert}>
+      <AlertDialog
+        open={showMobileNumberAlert}
+        onOpenChange={setShowMobileNumberAlert}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Invalid Mobile Number?</AlertDialogTitle>

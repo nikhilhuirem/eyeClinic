@@ -7,6 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model complaints_list {
+  complaintOptions String @id @db.VarChar(100)
+}
+
 model diagnosis {
   patient_id       String    @id @db.VarChar(50)
   clinical_comment String?   @db.Text
