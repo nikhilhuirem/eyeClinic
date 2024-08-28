@@ -1,6 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, {
+  useState,
+  forwardRef,
+  useRef,
+  useImperativeHandle,
+} from "react";
 import { useForm } from "react-hook-form";
 import {
   AlertDialog,
@@ -12,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface patient {
+interface Patient {
   patient_id: string;
   name: string;
   age: number;
@@ -22,14 +27,19 @@ interface patient {
 }
 
 interface PatientDetailsFormProps {
-  patientData: patient | null;
-  onSubmit: (data: patient) => void;
+  patientData: Patient | null;
+  onSubmit: (data: Patient) => void;
 }
 
-const PatientDetailsForm: React.FC<PatientDetailsFormProps> = ({
-  patientData,
-  onSubmit,
-}) => {
+interface PatientDetailsFormRef extends HTMLFormElement {
+  getPatientData: () => Patient;
+}
+
+// Forward ref to enable ref usage in parent component
+const PatientDetailsForm = forwardRef<
+  PatientDetailsFormRef,
+  PatientDetailsFormProps
+>(({ patientData, onSubmit }, ref) => {
   const [showAgeAlert, setShowAgeAlert] = useState(false);
   const [showMobileNumberAlert, setShowMobileNumberAlert] = useState(false);
   const [prevAge, setPrevAge] = useState<number | null>(null);
@@ -42,7 +52,7 @@ const PatientDetailsForm: React.FC<PatientDetailsFormProps> = ({
     formState: { errors },
     trigger,
     watch,
-  } = useForm<patient>({
+  } = useForm<Patient>({
     mode: "onChange", // This ensures validation happens on field change
   });
 
@@ -53,7 +63,7 @@ const PatientDetailsForm: React.FC<PatientDetailsFormProps> = ({
     if (patientData) {
       // Use a type assertion to handle the keys correctly
       Object.keys(patientData).forEach((key) => {
-        setValue(key as keyof patient, patientData[key as keyof patient]);
+        setValue(key as keyof Patient, patientData[key as keyof Patient]);
       });
       setPrevAge(patientData.age);
       setPrevMobile(patientData.mobile);
@@ -89,11 +99,26 @@ const PatientDetailsForm: React.FC<PatientDetailsFormProps> = ({
     setShowMobileNumberAlert(false); // Close the alert dialog
   };
 
+  const formRef = useRef<HTMLFormElement>(null);
+  // Expose methods or values to parent through ref
+  useImperativeHandle(ref, () => ({
+    ...(formRef.current as HTMLFormElement), // Explicitly cast to HTMLFormElement to match all form properties
+    getPatientData: () => ({
+      patient_id: watch("patient_id"),
+      name: watch("name"),
+      age: watch("age"),
+      sex: watch("sex"),
+      address: watch("address"),
+      mobile: watch("mobile"),
+    }),
+  }));
+
   return (
     <>
       <div className="bg-white p-2 rounded shadow-md w-full h-auto">
         <h2 className="text-2xl mb-4">Patient Details:</h2>
         <form
+          ref={formRef} // Attach ref to the form element if needed
           onSubmit={handleSubmit(onSubmit)}
           className="grid grid-cols-1 gap-1.5 md:grid-cols-2"
         >
@@ -201,6 +226,6 @@ const PatientDetailsForm: React.FC<PatientDetailsFormProps> = ({
       </AlertDialog>
     </>
   );
-};
+});
 
 export default PatientDetailsForm;

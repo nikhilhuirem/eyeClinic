@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import { Button } from "./ui/button";
 import Header from "./ui/header";
 import PatientDetailsForm from "./patientDetailsForm";
 import ComplaintForm from "./complaintForm";
+import EyePerscriptionForm from "./eye_perscription";
 import ClinicalCommentAndActionPlan from "./clinicalCommentAndActionPlan";
 import DatePickerWithPresets from "./reviewDate";
 import { Label } from "@radix-ui/react-label";
 
-interface medication {
+interface Medication {
   sl_no: number;
   eye: string;
   form: string;
@@ -20,20 +22,20 @@ interface medication {
   remarks: string;
 }
 
-interface diagnosis {
+interface Diagnosis {
   clinical_comment: string;
   action_plan: string;
   review_date: string;
   complaint: string;
 }
 
-interface eyeDiagnosis {
+interface EyeDiagnosis {
   sl_no: number;
   eye: string;
   diagnosis: string;
 }
 
-interface eye_perscription {
+interface EyePrescription {
   eye: string;
   vision_type: string;
   sphere: number;
@@ -42,13 +44,13 @@ interface eye_perscription {
   va: string;
 }
 
-interface glass_perscription {
+interface GlassPrescription {
   eye: string;
   glass_type: string;
   lens_type: string;
 }
 
-interface patient {
+interface Patient {
   patient_id: string;
   name: string;
   age: number;
@@ -62,16 +64,62 @@ interface DiagnosisFormProps {
 }
 
 const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ id }) => {
-  const [patientData, setPatientData] = useState<patient | null>(null);
-  const [complaints, setComplaints] = useState<string>();
-  const [diagnosisData, setDiagnosisData] = useState<diagnosis>({
+  const [patientData, setPatientData] = useState<Patient | null>(null);
+  const [complaints, setComplaints] = useState<string | undefined>(undefined);
+  const [diagnosisData, setDiagnosisData] = useState<Diagnosis>({
     clinical_comment: "",
     action_plan: "",
     review_date: "",
     complaint: "",
   });
+  const [diagnosisDataToSubmit, setDiagnosisDataToSubmit] = useState<Diagnosis>(
+    { clinical_comment: "", action_plan: "", review_date: "", complaint: "" }
+  );
+  const [commentChangeHolder, setCommentChange] = useState<string>("");
+  const [actionPlanChangeHolder, setActionPlanChange] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Create a ref to access ComplaintForm methods
+  const complaintFormRef = useRef<any>(null);
+  const patientDetailsRef = useRef<any>(null);
+  const eyePerscriptionRef = useRef<any>(null);
+
+  const isObjectNotEmpty = (
+    obj: Diagnosis | { [s: string]: unknown } | ArrayLike<unknown>
+  ) =>
+    Object.values(obj).every((value) => value !== null && value !== undefined);
+
+  const handleSubmit = () => {
+    const newComplaints = complaintFormRef.current?.getComplaintsData();
+    const newPatientData = patientDetailsRef.current?.getPatientData();
+    console.log(newPatientData);
+    const updatedData = {
+      ...diagnosisDataToSubmit,
+      complaint: newComplaints || diagnosisDataToSubmit.complaint,
+      clinical_comment:
+        diagnosisData.clinical_comment + (commentChangeHolder || ""),
+      action_plan: diagnosisData.action_plan + (actionPlanChangeHolder || ""),
+    };
+
+    setDiagnosisDataToSubmit(updatedData);
+
+    // Now you can check if `updatedData` is valid and submit the data
+    if (isObjectNotEmpty(updatedData)) {
+      submitDiagnosis(updatedData);
+    }
+  };
+
+  const submitDiagnosis = async (data: Diagnosis) => {
+    try {
+      await axios.post(`/api/diagnosis/${id}`, data);
+      setError(null);
+      console.log("Complaints submitted successfully!");
+    } catch (error) {
+      setError("Failed to submit complaints.");
+      console.error("Submission error:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -95,16 +143,52 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ id }) => {
     const fetchDiagnosisData = async () => {
       try {
         const response = await axios.get(`/api/diagnosis/${id}`);
-        if (response.data && typeof response.data === "object") {
+        if (response.status === 404) {
+          // Handle 404 error by keeping diagnosisData and diagnosisDataToSubmit empty
+          setDiagnosisData({
+            clinical_comment: "",
+            action_plan: "",
+            review_date: "",
+            complaint: "",
+          });
+          setDiagnosisDataToSubmit({
+            clinical_comment: "",
+            action_plan: "",
+            review_date: "",
+            complaint: "",
+          });
+        } else if (response.data && typeof response.data === "object") {
           setDiagnosisData(response.data);
+          setDiagnosisDataToSubmit({
+            clinical_comment: response.data.clinical_comment || "",
+            action_plan: response.data.action_plan || "",
+            review_date: response.data.review_date || "",
+            complaint: response.data.complaint || "",
+          });
           if (response.data.complaint) {
             setComplaints(response.data.complaint);
           }
         } else {
           setError("Unexpected response format");
         }
-      } catch (error) {
-        setError("Error fetching data");
+      } catch (error: any) {
+        if (error.response && error.response.status === 404) {
+          // Handle 404 error by keeping diagnosisData and diagnosisDataToSubmit empty
+          setDiagnosisData({
+            clinical_comment: "",
+            action_plan: "",
+            review_date: "",
+            complaint: "",
+          });
+          setDiagnosisDataToSubmit({
+            clinical_comment: "",
+            action_plan: "",
+            review_date: "",
+            complaint: "",
+          });
+        } else {
+          setError("Error fetching diagnosis data");
+        }
       } finally {
         setLoading(false);
       }
@@ -113,39 +197,22 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ id }) => {
   }, [id]);
 
   const handleCommentChange = (value: string) => {
-    setDiagnosisData((prevDiagnosis) => ({
-      ...prevDiagnosis,
-      clinical_comment: value,
-    }));
+    setCommentChange(value);
   };
 
   const handleActionPlanChange = (value: string) => {
-    setDiagnosisData((prevDiagnosis) => ({
-      ...prevDiagnosis,
-      action_plan: value,
-    }));
+    setActionPlanChange(value);
   };
 
   const handleReviewDateChange = (newDate: string) => {
-    setDiagnosisData((prevDiagnosis) => ({
+    setDiagnosisDataToSubmit((prevDiagnosis) => ({
       ...prevDiagnosis,
       review_date: newDate,
     }));
   };
 
-  const handleSubmit = async () => {
-    if (validateForm()) {
-      // Handle form submission logic
-    }
-  };
-
-  const validateForm = () => {
-    // Add validation logic here
-    return true;
-  };
-
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Loading for something...</div>;
   }
 
   if (error) {
@@ -162,10 +229,18 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ id }) => {
         <Header />
       </div>
       <div className="flex flex-col items-center bg-gray-100 w-full p-1">
-        <PatientDetailsForm patientData={patientData} onSubmit={handleSubmit} />
+        <PatientDetailsForm
+          patientData={patientData}
+          onSubmit={handleSubmit}
+          ref={patientDetailsRef}
+        />
       </div>
       <div className="flex flex-col items-center bg-gray-100 w-full p-1">
-        <ComplaintForm complaintsData={complaints} />
+        <ComplaintForm
+          complaintsData={complaints}
+          ref={complaintFormRef}
+          onComplaintError={setError}
+        />
       </div>
       <div className="flex flex-col items-center bg-gray-100 w-full p-1">
         <ClinicalCommentAndActionPlan
@@ -176,6 +251,9 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ id }) => {
         />
       </div>
       <div className="flex flex-col items-center bg-gray-100 w-full p-1">
+        <EyePerscriptionForm id={id} ref={eyePerscriptionRef} />
+      </div>
+      <div className="flex flex-col items-center bg-gray-100 w-full p-1">
         <div className="bg-white p-6 rounded shadow-md w-full mx-auto">
           <section className="border-t border-b py-4">
             <Label className="font-bold mb-2">Review Date: </Label>
@@ -184,6 +262,13 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ id }) => {
               onReviewDateChange={handleReviewDateChange}
             />
           </section>
+        </div>
+      </div>
+      <div className="flex flex-col items-center bg-gray-100 w-full p-1">
+        <div className="bg-white p-6 rounded shadow-md w-full mx-auto">
+          <Button onClick={handleSubmit} className="mt-4">
+            Submit
+          </Button>
         </div>
       </div>
     </div>

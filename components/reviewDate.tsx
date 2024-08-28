@@ -53,12 +53,14 @@ const DatePickerWithPresets: React.FC<DatePickerWithPresetsProps> = ({
       setDate(selectedDate);
       const newDateString = selectedDate.toISOString();
       console.log("Selected Date String to Parent:", newDateString);
-      if (onReviewDateChange) {
-        onReviewDateChange(newDateString);
+      {
+        if (onReviewDateChange) {
+          onReviewDateChange(newDateString);
+        }
       }
     }
   };
-  console.log("date up", date);
+  //console.log("date up", date);
 
   return (
     <Popover>

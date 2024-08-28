@@ -4,11 +4,18 @@ import { Textarea } from "@/components/ui/textarea";
 interface ClinicalCommentAndActionPlanProps {
   clinical_comment?: string;
   action_plan?: string;
+  onCommentChange: (value: string) => void;
+  onActionPlanChange: (value: string) => void;
 }
 
 const ClinicalCommentAndActionPlan: React.FC<
   ClinicalCommentAndActionPlanProps
-> = ({ clinical_comment = "", action_plan = "" }) => {
+> = ({
+  clinical_comment = "",
+  action_plan = "",
+  onCommentChange,
+  onActionPlanChange,
+}) => {
   // State variables for editable content
   const [editableComment, setEditableComment] = useState("");
   const [editableActionPlan, setEditableActionPlan] = useState("");
@@ -24,12 +31,15 @@ const ClinicalCommentAndActionPlan: React.FC<
   // Handler for Clinical Comments textarea
   const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
+    console.log(newText);
 
     // Check if the new text starts with the original (non-editable) comment
     if (newText.startsWith(clinical_comment)) {
       // Extract and set the editable portion
       const appendedText = newText.slice(clinical_comment.length);
       setEditableComment(appendedText);
+      console.log("editable", editableComment);
+      if (onCommentChange) onCommentChange(appendedText);
     } else {
       // User attempted to edit the non-editable part
       setShowCommentWarning(true);
@@ -56,7 +66,10 @@ const ClinicalCommentAndActionPlan: React.FC<
     if (newText.startsWith(action_plan)) {
       // Extract and set the editable portion
       const appendedText = newText.slice(action_plan.length);
+
       setEditableActionPlan(appendedText);
+
+      if (onActionPlanChange) onActionPlanChange(appendedText);
     } else {
       // User attempted to edit the non-editable part
       setShowActionPlanWarning(true);

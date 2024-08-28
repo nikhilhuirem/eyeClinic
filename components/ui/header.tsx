@@ -1,4 +1,3 @@
-// components/ui/header.tsx
 import Image from "next/image";
 import logo from "../../public/images/logo.png"; // Adjust the path to your logo
 
@@ -13,15 +12,15 @@ const Header: React.FC = () => {
             alt="Clinic Logo"
             layout="fill"
             objectFit="contain"
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
             className="transform scale-110" // Increase logo size
           />
         </div>
-        <div className="text-right">
+        <div className="text-right justify">
           <h1 className="text-[22pt] font-black text-[#7AD47A]">
             SAFE-SIGHT EYE CARE
           </h1>
           <p className="text-gray-700 text-sm">An excellent eye care centre</p>
-
           <p className="text-gray-700 text-sm">
             03848 291288 (Call) / 8257970103
           </p>

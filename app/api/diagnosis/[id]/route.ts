@@ -31,11 +31,11 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const {  complaint, clinical_comment, action_plan, review_date } = body;
+    const {   complaint, clinical_comment, action_plan, review_date } = body;
 
-    if (!complaint || !clinical_comment || !action_plan || !review_date) {
+    /*if (!complaint || !clinical_comment || !action_plan || !review_date) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
-    }
+    }*/
 
     const existingDiagnosis = await prisma.diagnosis.findUnique({
       where: { patient_id: id },
