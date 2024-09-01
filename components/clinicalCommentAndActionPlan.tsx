@@ -31,14 +31,12 @@ const ClinicalCommentAndActionPlan: React.FC<
   // Handler for Clinical Comments textarea
   const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
-    console.log(newText);
 
     // Check if the new text starts with the original (non-editable) comment
     if (newText.startsWith(clinical_comment)) {
       // Extract and set the editable portion
       const appendedText = newText.slice(clinical_comment.length);
       setEditableComment(appendedText);
-      console.log("editable", editableComment);
       if (onCommentChange) onCommentChange(appendedText);
     } else {
       // User attempted to edit the non-editable part

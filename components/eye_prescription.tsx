@@ -1,7 +1,13 @@
 "use client";
 
 import axios from "axios";
-import { forwardRef, useEffect, useState } from "react";
+import {
+  forwardRef,
+  SetStateAction,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -93,11 +99,12 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
 
     const [nvSphereInput, setNvSphereInput] = useState<string>("");
     const [nvSphereError, setNvSphereError] = useState<string | null>(null);
+    const [error, setError] = useState("");
 
     useEffect(() => {
       const fetchEyePrescription = async () => {
         try {
-          const response = await axios.get(`/api/eye_perscription/${id}`);
+          const response = await axios.get(`/api/eye_prescription/${id}`);
           if (response.data && typeof response.data == "object") {
             const leftDV = response.data.find(
               (item: EyePrescription) =>
@@ -144,7 +151,6 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
     };
 
     const handleAddNvSphere = () => {
-      console.log("NV trigger");
       setNvSphereError("");
       const nvSphereValue = parseFloat(nvSphereInput);
 
@@ -199,6 +205,7 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
         rightEyeNVPrescriptions.cylinder?.toString() || ""
       );
       setRightNVAxisInput(rightEyeNVPrescriptions.axis?.toString() || "");
+      setError("");
     }, [leftEyeNVPrescriptions, rightEyeNVPrescriptions]);
 
     useEffect(() => {
@@ -210,7 +217,20 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
         rightEyeDVPrescriptions.cylinder?.toString() || ""
       );
       setRightDVAxisInput(rightEyeDVPrescriptions.axis?.toString() || "");
+      setError("");
     }, [leftEyeDVPrescriptions, rightEyeDVPrescriptions]);
+
+    useImperativeHandle(ref, () => ({
+      getEyePrescriptions: () => ({
+        leftEyeDVPrescriptions,
+        leftEyeNVPrescriptions,
+        rightEyeDVPrescriptions,
+        rightEyeNVPrescriptions,
+      }),
+      setErrorMessages(message: SetStateAction<string>) {
+        setError(message);
+      },
+    }));
 
     return (
       <Card className="w-full">
@@ -239,6 +259,7 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
                         type="text"
                         value={rightDVSphereInput}
                         onChange={(e) => {
+                          setError("");
                           const { value } = e.target;
                           const regex = /^-?\d*\.?\d*$/;
 
@@ -268,6 +289,7 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
                         type="text"
                         value={rightDVCylinderInput}
                         onChange={(e) => {
+                          setError("");
                           const { value } = e.target;
                           const regex = /^-?\d*\.?\d*$/;
 
@@ -297,6 +319,7 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
                         type="text"
                         value={rightDVAxisInput}
                         onChange={(e) => {
+                          setError("");
                           const { value } = e.target;
                           const regex = /^-?\d*\.?\d*$/;
 
@@ -365,6 +388,7 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
                         type="text"
                         value={rightNVSphereInput}
                         onChange={(e) => {
+                          setError("");
                           const { value } = e.target;
                           const regex = /^-?\d*\.?\d*$/;
 
@@ -394,6 +418,7 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
                         type="text"
                         value={rightNVCylinderInput}
                         onChange={(e) => {
+                          setError("");
                           const { value } = e.target;
                           const regex = /^-?\d*\.?\d*$/;
 
@@ -423,6 +448,7 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
                         type="text"
                         value={rightNVAxisInput}
                         onChange={(e) => {
+                          setError("");
                           const { value } = e.target;
                           const regex = /^-?\d*\.?\d*$/;
 
@@ -496,6 +522,7 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
                         type="text"
                         value={LeftDVSphereInput}
                         onChange={(e) => {
+                          setError("");
                           const { value } = e.target;
                           const regex = /^-?\d*\.?\d*$/;
 
@@ -525,6 +552,7 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
                         type="text"
                         value={leftDVCylinderInput}
                         onChange={(e) => {
+                          setError("");
                           const { value } = e.target;
                           const regex = /^-?\d*\.?\d*$/;
 
@@ -554,6 +582,7 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
                         type="text"
                         value={leftDVAxisInput}
                         onChange={(e) => {
+                          setError("");
                           const { value } = e.target;
                           const regex = /^-?\d*\.?\d*$/;
 
@@ -622,6 +651,7 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
                         type="text"
                         value={leftNVSphereInput}
                         onChange={(e) => {
+                          setError("");
                           const { value } = e.target;
                           const regex = /^-?\d*\.?\d*$/;
 
@@ -651,6 +681,7 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
                         type="text"
                         value={leftNVCylinderInput}
                         onChange={(e) => {
+                          setError("");
                           const { value } = e.target;
                           const regex = /^-?\d*\.?\d*$/;
 
@@ -680,6 +711,7 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
                         type="text"
                         value={leftNVAxisInput}
                         onChange={(e) => {
+                          setError("");
                           const { value } = e.target;
                           const regex = /^-?\d*\.?\d*$/;
 
@@ -754,6 +786,11 @@ const EyePrescriptionForm = forwardRef<any, EyePrescriptionFormProps>(
               )}
             </div>
           </div>
+          {error && (
+            <p id="tableError" className="text-red-500">
+              {error}
+            </p>
+          )}
         </CardContent>
       </Card>
     );

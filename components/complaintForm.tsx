@@ -3,6 +3,7 @@ import React, {
   useEffect,
   useImperativeHandle,
   forwardRef,
+  SetStateAction,
 } from "react";
 import { Label } from "@/components/ui/label";
 import {
@@ -43,7 +44,7 @@ const ComplaintForm = forwardRef<any, ComplaintFormProps>(
     const [newComplaints, setNewComplaints] = useState<Complaint[]>([]);
     const [complaintOptions, setComplaintOptions] = useState<string[]>([]);
     const [query, setQuery] = useState("");
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState("");
 
     useEffect(() => {
       // Fetch initial complaint options from API
@@ -167,6 +168,9 @@ const ComplaintForm = forwardRef<any, ComplaintFormProps>(
           return complaintsString;
         }
         return null;
+      },
+      setErrorMessages(message: SetStateAction<string>) {
+        setError(message);
       },
     }));
 

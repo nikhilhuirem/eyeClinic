@@ -6,10 +6,11 @@ import { Button } from "./ui/button";
 import Header from "./ui/header";
 import PatientDetailsForm from "./patientDetailsForm";
 import ComplaintForm from "./complaintForm";
-import EyePerscriptionForm from "./eye_perscription";
+import EyePerscriptionForm from "./eye_prescription";
 import ClinicalCommentAndActionPlan from "./clinicalCommentAndActionPlan";
 import DatePickerWithPresets from "./reviewDate";
 import { Label } from "@radix-ui/react-label";
+import { Console } from "console";
 
 interface Medication {
   sl_no: number;
@@ -59,6 +60,12 @@ interface Patient {
   mobile: string;
 }
 
+type ErrorMessages = {
+  diagnosis?: string;
+  patient?: string;
+  eye_prescription?: string;
+};
+
 interface DiagnosisFormProps {
   id: string;
 }
@@ -83,17 +90,75 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ id }) => {
   // Create a ref to access ComplaintForm methods
   const complaintFormRef = useRef<any>(null);
   const patientDetailsRef = useRef<any>(null);
-  const eyePerscriptionRef = useRef<any>(null);
+  const eyePrescriptionRef = useRef<any>(null);
 
   const isObjectNotEmpty = (
     obj: Diagnosis | { [s: string]: unknown } | ArrayLike<unknown>
   ) =>
     Object.values(obj).every((value) => value !== null && value !== undefined);
+  const convertEyePrescriptionData = (
+    eyePrescriptionData: Record<string, EyePrescription>
+  ): EyePrescription[] => {
+    // Extract the EyePrescription objects and return them as an array
+    return Object.values(eyePrescriptionData);
+  };
 
+  let errorMessages: ErrorMessages = {};
   const handleSubmit = () => {
     const newComplaints = complaintFormRef.current?.getComplaintsData();
     const newPatientData = patientDetailsRef.current?.getPatientData();
-    console.log(newPatientData);
+    const eyePrescriptionData: Record<string, EyePrescription> | undefined =
+      eyePrescriptionRef.current?.getEyePrescriptions();
+
+    let skipEyePrescriptionCall = false;
+
+    // Ensure eyePrescriptionData is not null and is an object
+    if (!eyePrescriptionData || Object.keys(eyePrescriptionData).length === 0) {
+      console.log("Ignored");
+      skipEyePrescriptionCall = true; // Set flag to skip eye prescription API call
+    } else {
+      let allFieldsNullOrEmpty = true;
+
+      // Iterate over the values of the eyePrescriptionData object
+      for (const prescription of Object.values(eyePrescriptionData)) {
+        if (
+          prescription.sphere !== null &&
+          prescription.cylinder !== null &&
+          prescription.axis !== null &&
+          prescription.va.trim() !== ""
+        ) {
+          allFieldsNullOrEmpty = false;
+        } else if (
+          prescription.sphere === null &&
+          prescription.cylinder === null &&
+          prescription.axis === null &&
+          prescription.va.trim() === ""
+        ) {
+          allFieldsNullOrEmpty = true;
+        } else {
+          errorMessages.eye_prescription =
+            "All fields in the eye prescription data must be filled.";
+          break; // Exit loop if validation fails
+        }
+      }
+
+      if (allFieldsNullOrEmpty) {
+        console.log(
+          "Skipped eye prescription API call due to all fields being null or empty"
+        );
+        skipEyePrescriptionCall = true; // Set flag to skip eye prescription API call
+      }
+    }
+
+    if (Object.keys(errorMessages).length > 0) {
+      if (eyePrescriptionRef.current) {
+        eyePrescriptionRef.current.setErrorMessages(
+          errorMessages.eye_prescription
+        );
+      }
+      return;
+    }
+
     const updatedData = {
       ...diagnosisDataToSubmit,
       complaint: newComplaints || diagnosisDataToSubmit.complaint,
@@ -108,6 +173,15 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ id }) => {
     if (isObjectNotEmpty(updatedData)) {
       submitDiagnosis(updatedData);
     }
+
+    if (!skipEyePrescriptionCall) {
+      if (eyePrescriptionData) {
+        // Convert eyePrescriptionData for API call
+        const convertedEyePrescriptionData =
+          convertEyePrescriptionData(eyePrescriptionData);
+        submitEyePrescription(convertedEyePrescriptionData);
+      }
+    }
   };
 
   const submitDiagnosis = async (data: Diagnosis) => {
@@ -116,8 +190,31 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ id }) => {
       setError(null);
       console.log("Complaints submitted successfully!");
     } catch (error) {
-      setError("Failed to submit complaints.");
-      console.error("Submission error:", error);
+      errorMessages.diagnosis = "Failed to submit Diagnosis.";
+      if (Object.keys(errorMessages).length > 0) {
+        if (complaintFormRef.current) {
+          complaintFormRef.current.setErrorMessages(errorMessages.diagnosis);
+        }
+        return;
+      }
+    }
+  };
+
+  const submitEyePrescription = async (data: EyePrescription[]) => {
+    try {
+      await axios.post(`/api/eye_prescription/${id}`, data);
+      setError(null);
+      console.log("Eye Prescription submitted successfully!");
+    } catch (error) {
+      errorMessages.eye_prescription = "Failed to submit Eye Prescription.";
+      if (Object.keys(errorMessages).length > 0) {
+        if (eyePrescriptionRef.current) {
+          eyePrescriptionRef.current.setErrorMessages(
+            errorMessages.eye_prescription
+          );
+        }
+        return;
+      }
     }
   };
 
@@ -143,6 +240,7 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ id }) => {
     const fetchDiagnosisData = async () => {
       try {
         const response = await axios.get(`/api/diagnosis/${id}`);
+        console.log(response.data);
         if (response.status === 404) {
           // Handle 404 error by keeping diagnosisData and diagnosisDataToSubmit empty
           setDiagnosisData({
@@ -251,7 +349,7 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ id }) => {
         />
       </div>
       <div className="flex flex-col items-center bg-gray-100 w-full p-1">
-        <EyePerscriptionForm id={id} ref={eyePerscriptionRef} />
+        <EyePerscriptionForm id={id} ref={eyePrescriptionRef} />
       </div>
       <div className="flex flex-col items-center bg-gray-100 w-full p-1">
         <div className="bg-white p-6 rounded shadow-md w-full mx-auto">
