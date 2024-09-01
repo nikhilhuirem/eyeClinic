@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 import GetIdFromRequest from "@/components/getIDFromRequest";
 
 const prisma = new PrismaClient();
-
 export async function GET(req: NextRequest) {
   const id = GetIdFromRequest(req);
   if (!id) {
@@ -29,6 +28,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
+
 export async function POST(req: NextRequest) {
   const id = GetIdFromRequest(req);
   if (!id) {
@@ -42,9 +42,10 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { complaint, clinical_comment, action_plan, review_date } = body;
 
-    // Build data object dynamically to avoid writing null or undefined fields
+    // Create an empty data object
     const data: any = {};
 
+    // Add fields only if they are valid
     if (complaint !== null && complaint !== undefined) {
       data.complaint = complaint;
     }
@@ -54,8 +55,16 @@ export async function POST(req: NextRequest) {
     if (action_plan !== null && action_plan !== undefined) {
       data.action_plan = action_plan;
     }
-    if (review_date !== null && review_date !== undefined) {
-      data.review_date = new Date(review_date);
+    if (review_date && review_date.trim() !== "") {
+      const validDate = new Date(review_date);
+      if (!isNaN(validDate.getTime())) {
+        data.review_date = validDate;
+      } else {
+        return NextResponse.json(
+          { message: "Invalid review date" },
+          { status: 400 }
+        );
+      }
     }
 
     const existingDiagnosis = await prisma.diagnosis.findUnique({
@@ -63,6 +72,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingDiagnosis) {
+      // Update only if data is not empty
       if (Object.keys(data).length > 0) {
         await prisma.diagnosis.update({
           where: { patient_id: id },
@@ -80,7 +90,8 @@ export async function POST(req: NextRequest) {
       }
     } else {
       if (Object.keys(data).length > 0) {
-        data.patient_id = id; // Set patient_id for create operation
+        data.patient_id = id; // Set patient_id for the create operation
+        console.log(data);
         await prisma.diagnosis.create({
           data,
         });

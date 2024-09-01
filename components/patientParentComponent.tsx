@@ -92,10 +92,9 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ id }) => {
   const patientDetailsRef = useRef<any>(null);
   const eyePrescriptionRef = useRef<any>(null);
 
-  const isObjectNotEmpty = (
-    obj: Diagnosis | { [s: string]: unknown } | ArrayLike<unknown>
-  ) =>
-    Object.values(obj).every((value) => value !== null && value !== undefined);
+  function hasOnlyNullOrEmptyValues(obj: Diagnosis): boolean {
+    return Object.values(obj).every((value) => value === null || value === "");
+  }
   const convertEyePrescriptionData = (
     eyePrescriptionData: Record<string, EyePrescription>
   ): EyePrescription[] => {
@@ -170,7 +169,8 @@ const DiagnosisForm: React.FC<DiagnosisFormProps> = ({ id }) => {
     setDiagnosisDataToSubmit(updatedData);
 
     // Now you can check if `updatedData` is valid and submit the data
-    if (isObjectNotEmpty(updatedData)) {
+    if (!hasOnlyNullOrEmptyValues(updatedData)) {
+      console.log(updatedData);
       submitDiagnosis(updatedData);
     }
 
