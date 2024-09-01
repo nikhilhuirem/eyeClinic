@@ -32,7 +32,6 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-
     if (!Array.isArray(body)) {
       return NextResponse.json({ message: "Invalid data format" }, { status: 400 });
     }
